@@ -1,25 +1,32 @@
+
+import java.math.BigDecimal;
+
 public class FingerEntropyBucketsToConfigurationCounts {
 
     public static void main(String[] args) {
         Fingers fingers = new Fingers(50);
-        int[] entropyBuckets = new int[201];
+        int[] entropyBuckets = new int[101];
         
         do {
             entropyBuckets[getEntropyBucket(fingers.getEntropy())]++;
         } while (fingers.advance()); 
         
-        double bucket = -1.0;
+        BigDecimal entropy = BigDecimal.valueOf(-1L);
         
-        for (int i : entropyBuckets) {
-            System.out.println(bucket + " " + i);
-            bucket += 0.02;
+        for (int entropyBucket : entropyBuckets) {
+            String string = 
+                    String.format(
+                            "%s %d", 
+                            entropy.toPlainString(), 
+                            entropyBucket);
+            
+            System.out.println(string);
+            entropy = entropy.add(BigDecimal.valueOf(0.02));
         }
-        
-        System.out.println("yeah");
     }
     
     private static int getEntropyBucket(double entropy) {
-        return (int) ((entropy + 1.0) * 100);
+        return (int) ((entropy + 1.0) / 0.02);
     }
     
     private static final class Fingers {
