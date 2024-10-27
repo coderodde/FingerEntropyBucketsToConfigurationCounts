@@ -1,48 +1,74 @@
-
-import java.math.BigDecimal;
-
 public class FingerEntropyBucketsToConfigurationCounts {
+    
+    private static final double DEFAULT_BUCKET_WIDTH = 0.01;
 
     public static void main(String[] args) {
-        System.out.println(
-                "--- Finger configuration entropies as configurations grow " + 
-                "in lexicographic order. ---");
         
-        double[] entropies = getEntropies(10);
-        int lineNumber = 0;
-            
-        for (double entropy : entropies) {
-            System.out.printf(
-                    "%4d %s\n", 
-                    lineNumber++, 
-                    Double.toString(entropy).replace(',', '.'));
-        }
+        System.out.println("# --- Entropy buckets N = 48 ---");
+        run(48, DEFAULT_BUCKET_WIDTH);
         
-        System.out.println("--- Entropy buckets. ---");
+        System.out.println();
         
-        Fingers fingers = new Fingers(50);
-        int[] entropyBuckets = new int[101];
+        System.out.println("# --- Entropy buckets N = 49 ---");
+        run(49, DEFAULT_BUCKET_WIDTH);
+        
+        System.out.println();
+        
+        System.out.println("# --- Entropy buckets N = 50 ---");
+        run(50, DEFAULT_BUCKET_WIDTH);
+    }
+    
+    private static int[] getEntropyBuckets(final int listSize,
+                                           final double bucketWidth) {
+        final Fingers fingers = new Fingers(listSize);
+        final int[] entropyBuckets = getEntropyBucketArray(0.01);
         
         do {
-            entropyBuckets[getEntropyBucket(fingers.getEntropy())]++;
-        } while (fingers.advance()); 
+            entropyBuckets[getEntropyBucketIndex(fingers.getEntropy(),
+                                                 bucketWidth)]++;
+        } while (fingers.advance());
         
-        BigDecimal entropy = BigDecimal.valueOf(-1L);
+        return entropyBuckets;
+    }
+    
+    private static void printEntropyBuckets(final int[] entropyBuckets,
+                                            final double bucketWidth) {
+        double entropy = -1.0;
         
-        for (int entropyBucket : entropyBuckets) {
-            String string = 
+        for (final int bucketCount : entropyBuckets) {
+            System.out.println(
                     String.format(
-                            "%s %d", 
-                            entropy.toPlainString(), 
-                            entropyBucket);
+                            "%.2f %d", 
+                            entropy, 
+                            bucketCount)
+                            .replaceAll(",", "."));
             
-            System.out.println(string);
-            entropy = entropy.add(BigDecimal.valueOf(0.02));
+            entropy += bucketWidth;
         }
     }
     
-    private static int getEntropyBucket(double entropy) {
-        return (int) ((entropy + 1.0) / 0.02);
+    private static void run(final int listSize,
+                            final double bucketWidth) {
+        final int[] entropyBuckets = getEntropyBuckets(listSize,
+                                                       bucketWidth);
+        printEntropyBuckets(
+                entropyBuckets,
+                bucketWidth);
+        
+        System.out.printf(
+                "# Optimal split entropy: %.2f\n", 
+                getOptimalSumEntropy(
+                        entropyBuckets, 
+                        bucketWidth));
+    }
+    
+    private static int[] getEntropyBucketArray(final double bucketWidth) {
+        return new int[(int)(2.0 / bucketWidth) + 1];
+    }
+    
+    private static int getEntropyBucketIndex(final double entropy,
+                                             final double bucketWidth) {
+        return (int) ((entropy + 1.0) / bucketWidth);
     }
     
     private static final class Fingers {
@@ -138,5 +164,59 @@ public class FingerEntropyBucketsToConfigurationCounts {
     
     private static int binomial(int n, int k) {
         return factorial(n) / factorial(n - k) / factorial(k);
+    }
+    
+    private static double getOptimalSumEntropy(final int[] entropyBuckets,
+                                               final double bucketWidth) {
+        int bestSplitIndex = -1;
+        int bestSplitValue = Integer.MAX_VALUE;
+        
+        for (int splitIndex = 0;
+                 splitIndex < entropyBuckets.length; 
+                 splitIndex++) {
+            
+            final int difference = getSplitDifference(entropyBuckets, 
+                                                      splitIndex);
+            
+            if (bestSplitValue > difference) {
+                bestSplitValue = difference;
+                bestSplitIndex = splitIndex;
+            }
+        }
+        
+        return bucketWidth * ((double)(bestSplitIndex) /
+                              (double)(entropyBuckets.length)) - 1.0;
+    }
+    
+    private static int getSplitDifference(final int[] entropyBuckets,
+                                          final int splitIndex) {
+        int sum1 = 0;
+        int sum2 = 0;
+        
+        for (int i = 0; i < splitIndex; i++) {
+            sum1 += entropyBuckets[i];
+        }
+        
+        for (int i = splitIndex; i < entropyBuckets.length; i++) {
+            sum2 += entropyBuckets[i];
+        }
+        
+        return Math.abs(sum1 - sum2);
+    }
+    
+    private static void lexicographicOrderStatistics() {
+        System.out.println(
+                "--- Finger configuration entropies as configurations grow " + 
+                "in lexicographic order. ---");
+        
+        double[] entropies = getEntropies(10);
+        int lineNumber = 0;
+            
+        for (double entropy : entropies) {
+            System.out.printf(
+                    "%4d %s\n", 
+                    lineNumber++, 
+                    Double.toString(entropy).replace(',', '.'));
+        }
     }
 }
