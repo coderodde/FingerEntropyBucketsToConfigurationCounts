@@ -4,18 +4,18 @@ public class FingerEntropyBucketsToConfigurationCounts {
 
     public static void main(String[] args) {
         
-        System.out.println("# --- Entropy buckets N = 48 ---");
-        run(48, DEFAULT_BUCKET_WIDTH);
+        System.out.println("# --- Entropy buckets N = 25 ---");
+        run(25, DEFAULT_BUCKET_WIDTH);
+        
+        System.out.println();
+        
+        System.out.println("# --- Entropy buckets N = 36 ---");
+        run(36, DEFAULT_BUCKET_WIDTH);
         
         System.out.println();
         
         System.out.println("# --- Entropy buckets N = 49 ---");
         run(49, DEFAULT_BUCKET_WIDTH);
-        
-        System.out.println();
-        
-        System.out.println("# --- Entropy buckets N = 50 ---");
-        run(50, DEFAULT_BUCKET_WIDTH);
     }
     
     private static int[] getEntropyBuckets(final int listSize,
@@ -184,8 +184,7 @@ public class FingerEntropyBucketsToConfigurationCounts {
             }
         }
         
-        return bucketWidth * ((double)(bestSplitIndex) /
-                              (double)(entropyBuckets.length)) - 1.0;
+        return -1.0 + (double)(bestSplitIndex) * bucketWidth;
     }
     
     private static int getSplitDifference(final int[] entropyBuckets,
