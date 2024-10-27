@@ -1,6 +1,6 @@
 public class FingerEntropyBucketsToConfigurationCounts {
     
-    private static final double DEFAULT_BUCKET_WIDTH = 0.01;
+    private static final double DEFAULT_BUCKET_WIDTH = 0.02;
 
     public static void main(String[] args) {
         
@@ -16,12 +16,16 @@ public class FingerEntropyBucketsToConfigurationCounts {
         
         System.out.println("# --- Entropy buckets N = 49 ---");
         run(49, DEFAULT_BUCKET_WIDTH);
+        System.out.println();
+        
+        System.out.println("# --- Entropy buckets N = 50");
+        run(50, DEFAULT_BUCKET_WIDTH);
     }
     
     private static int[] getEntropyBuckets(final int listSize,
                                            final double bucketWidth) {
         final Fingers fingers = new Fingers(listSize);
-        final int[] entropyBuckets = getEntropyBucketArray(0.01);
+        final int[] entropyBuckets = getEntropyBucketArray(bucketWidth);
         
         do {
             entropyBuckets[getEntropyBucketIndex(fingers.getEntropy(),
@@ -68,7 +72,7 @@ public class FingerEntropyBucketsToConfigurationCounts {
     
     private static int getEntropyBucketIndex(final double entropy,
                                              final double bucketWidth) {
-        return (int) ((entropy + 1.0) / bucketWidth);
+        return (int) Math.round((entropy + 1.0) / bucketWidth);
     }
     
     private static final class Fingers {
