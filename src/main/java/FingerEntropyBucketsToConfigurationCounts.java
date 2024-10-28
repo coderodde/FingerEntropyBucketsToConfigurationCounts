@@ -37,7 +37,7 @@ public class FingerEntropyBucketsToConfigurationCounts {
     
     private static void printEntropyBuckets(final int[] entropyBuckets,
                                             final double bucketWidth) {
-        double entropy = -1.0;
+        double entropy = 0.0;
         
         for (final int bucketCount : entropyBuckets) {
             System.out.println(
@@ -60,19 +60,19 @@ public class FingerEntropyBucketsToConfigurationCounts {
                 bucketWidth);
         
         System.out.printf(
-                "# Optimal split entropy: %.2f\n", 
-                getOptimalSumEntropy(
+                "# Optimal split entropy: %d\n", 
+                getOptimalSplitIndex(
                         entropyBuckets, 
                         bucketWidth));
     }
     
     private static int[] getEntropyBucketArray(final double bucketWidth) {
-        return new int[(int)(2.0 / bucketWidth) + 1];
+        return new int[(int)(1.0 / bucketWidth) + 1];
     }
     
     private static int getEntropyBucketIndex(final double entropy,
                                              final double bucketWidth) {
-        return (int) Math.round((entropy + 1.0) / bucketWidth);
+        return (int) Math.round(entropy / bucketWidth);
     }
     
     private static final class Fingers {
@@ -101,7 +101,7 @@ public class FingerEntropyBucketsToConfigurationCounts {
                                 fingerIndices.length);
             }
             
-            return 1.0 - sum / listLength;
+            return Math.max(0.0, 1.0 - sum / listLength);
         }
         
         boolean advance() {
@@ -170,8 +170,8 @@ public class FingerEntropyBucketsToConfigurationCounts {
         return factorial(n) / factorial(n - k) / factorial(k);
     }
     
-    private static double getOptimalSumEntropy(final int[] entropyBuckets,
-                                               final double bucketWidth) {
+    private static int getOptimalSplitIndex(final int[] entropyBuckets,
+                                            final double bucketWidth) {
         int bestSplitIndex = -1;
         int bestSplitValue = Integer.MAX_VALUE;
         
@@ -188,7 +188,7 @@ public class FingerEntropyBucketsToConfigurationCounts {
             }
         }
         
-        return -1.0 + (double)(bestSplitIndex) * bucketWidth;
+        return bestSplitIndex;
     }
     
     private static int getSplitDifference(final int[] entropyBuckets,
